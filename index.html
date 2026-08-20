@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>弱电智能化 · 线缆穿管 / 桥架规格计算器</title>
+<style>
+  :root {
+    --bg: #f5f7fa;
+    --panel: #ffffff;
+    --line: #e3e8ef;
+    --text: #1f2933;
+    --muted: #6b7785;
+    --brand: #2563eb;
+    --brand-soft: #e8f0fe;
+    --warn: #b42318;
+    --ok: #15803d;
+    --shadow: 0 1px 3px rgba(16,24,40,.08), 0 1px 2px rgba(16,24,40,.04);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 20px 60px; }
+  header.page-head {
+    background: linear-gradient(135deg, #1e3a8a, #2563eb);
+    color: #fff;
+    border-radius: 14px;
+    padding: 22px 26px;
+    box-shadow: var(--shadow);
+  }
+  header.page-head h1 { margin: 0 0 6px; font-size: 22px; text-align: center; }
+  header.page-head .src { font-size: 13px; opacity: .9; text-align: center; }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-top: 18px;
+    box-shadow: var(--shadow);
+  }
+  .card h2 {
+    font-size: 16px; margin: 0 0 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card h2 .tag {
+    font-size: 12px; font-weight: 400; color: var(--brand);
+    background: var(--brand-soft); padding: 2px 8px; border-radius: 6px;
+  }
+  .basis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+  .basis-item { border: 1px dashed var(--line); border-radius: 10px; padding: 12px 14px; background: #fafbfc; }
+  .basis-item .t { font-weight: 600; margin-bottom: 4px; }
+  .basis-item .d { font-size: 13px; color: var(--muted); }
+  .basis-item .v { color: var(--warn); font-weight: 700; }
+  .controls { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 14px; }
+  .controls label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 4px; }
+  select, input[type=number], input[type=text] {
+    padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px;
+    font-size: 14px; background: #fff; color: var(--text); font-family: inherit;
+  }
+  select:focus, input:focus { outline: 2px solid var(--brand); border-color: var(--brand); }
+  .toolbar { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+  .table-scroll {
+    max-height: 460px; overflow-y: auto;
+    border: 1px solid var(--line); border-radius: 10px; margin-bottom: 12px;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; table-layout: fixed; }
+  th, td { padding: 9px 8px; border-bottom: 1px solid var(--line); text-align: center; overflow: hidden; }
+  th { background: #f1f5f9; color: var(--muted); font-weight: 600; white-space: nowrap; position: sticky; top: 0; }
+  td input, td select { width: 100%; }
+  .row-result { font-weight: 600; color: var(--brand); }
+  .row-result.warn { color: var(--warn); }
+  .add-row-tr { background: #f0f6ff; }
+  .add-row-tr td { border-bottom: 1px solid var(--line); }
+  .btn {
+    border: none; border-radius: 8px; padding: 9px 16px; font-size: 14px;
+    cursor: pointer; font-family: inherit; font-weight: 600;
+  }
+  .btn-primary { background: var(--brand); color: #fff; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-ghost { background: #eef2f7; color: var(--text); }
+  .btn-ghost:hover { background: #e2e8f0; }
+  .btn-sm { padding: 5px 10px; font-size: 12px; border: none; }
+  .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
+  .stat { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; background: #fafbfc; }
+  .stat .k { font-size: 12px; color: var(--muted); }
+  .stat .val { font-size: 20px; font-weight: 700; margin-top: 4px; }
+  .stat .val.warn { color: var(--warn); }
+  .stat .val.ok { color: var(--ok); }
+  .note { font-size: 12.5px; color: var(--muted); margin-top: 10px; }
+  .pager { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .pager button { border: 1px solid var(--line); background: #fff; border-radius: 6px; padding: 5px 10px; cursor: pointer; font-family: inherit; font-size: 13px; }
+  .pager button:hover:not(:disabled) { background: #eef2f7; }
+  .pager button.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .pager button:disabled { opacity: .4; cursor: default; }
+  .pager .pg-info { color: var(--brand); font-size: 13px; margin: 0 6px; font-weight: 700; }
+  .page-size-ctl { margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+  .page-size-ctl button {
+    border: none; background: #eef2f7; color: var(--text); border-radius: 8px;
+    padding: 6px 12px; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600;
+  }
+  .page-size-ctl button:hover { background: #e2e8f0; }
+  .page-size-ctl button.active { background: var(--brand); color: #fff; }
+  .pipe-field { display: flex; align-items: center; gap: 10px; }
+  .pipe-label { font-weight: 700; font-size: 15px; color: var(--text); padding: 7px 2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="page-head">
+    <h1>弱电智能化 · 线缆穿管 / 桥架规格计算器</h1>
+    <div class="src">依据《民用建筑电气设计标准》GB 51348-2019 · 参考图集 19DX101-1</div>
+  </header>
+
+  <div class="card">
+    <h2>📐 计算依据 <span class="tag">GB 51348-2019 26.5.7</span></h2>
+    <div class="basis-grid">
+      <div class="basis-item">
+        <div class="t">① 单根大对数 / 单根光缆 / 单根主干</div>
+        <div class="d">25对及以上大对数对绞电缆、12芯及以上光缆或单根其他弱电主干线缆，弯曲段导管内敷设。</div>
+        <div>管径利用率 ≤ <span class="v">40%</span></div>
+      </div>
+      <div class="basis-item">
+        <div class="t">② 同管多根线缆</div>
+        <div class="d">同管敷设多根4对对绞 / 4芯及以下光缆 / 其他弱电线缆。</div>
+        <div>管截面积利用率 ≤ <span class="v">30%</span></div>
+      </div>
+      <div class="basis-item">
+        <div class="t">③ 同槽盒（桥架）多根</div>
+        <div class="d">同一电缆槽盒内同时敷设多根电缆或光缆。</div>
+        <div>桥架截面积利用率 ≤ <span class="v">50%</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>⚙️ 参数设置</h2>
+    <div class="controls">
+      <div class="pipe-field">
+        <span class="pipe-label">管材类型：</span>
+        <select id="pipeType"></select>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn btn-primary" id="addBtn">＋ 添加线缆</button>
+      <button class="btn btn-ghost" id="resetBtn">重置</button>
+      <button class="btn btn-ghost" id="exportBtn">⬇ 导出 Excel</button>
+      <div class="page-size-ctl">
+        <span>线缆显示行数：</span>
+        <button data-size="10">10</button>
+        <button data-size="20">20</button>
+        <button data-size="30">30</button>
+        <button data-size="50">50</button>
+        <button data-size="100">100</button>
+      </div>
+    </div>
+
+    <div class="table-scroll">
+      <table id="cableTable">
+        <thead>
+          <tr>
+            <th style="width:150px">类别</th>
+            <th style="width:165px">线缆型号</th>
+            <th style="width:92px">外径 (mm)</th>
+            <th style="width:104px">截面积 (mm²)</th>
+            <th style="width:74px">根数</th>
+            <th style="width:140px">建议管径</th>
+            <th style="width:64px">操作</th>
+          </tr>
+        </thead>
+        <tbody id="cableBody"></tbody>
+      </table>
+    </div>
+    <div class="pager" id="pager"></div>
+  </div>
+
+  <div class="card">
+    <h2>📊 汇总计算结果</h2>
+    <div class="summary">
+      <div class="stat"><div class="k">线缆总根数</div><div class="val" id="sumQty">0</div></div>
+      <div class="stat"><div class="k">线缆总截面积 (mm²)</div><div class="val" id="sumArea">0</div></div>
+      <div class="stat"><div class="k">建议管径（汇总）</div><div class="val" id="suggestPipe">-</div></div>
+      <div class="stat"><div class="k">线管截面积 (mm²)</div><div class="val" id="pipeArea">-</div></div>
+      <div class="stat"><div class="k">建议桥架规格</div><div class="val" id="suggestBridge">-</div></div>
+      <div class="stat"><div class="k">桥架截面积 (mm²)</div><div class="val" id="bridgeArea">-</div></div>
+    </div>
+    <p class="note" id="msg"></p>
+  </div>
+</div>
+
+<script>
+/* ---------- 管材规格数据（复刻"基础数据"工作表） ---------- */
+/* 每条：label=公称口径, d=内径(N列), a=内孔截面积(O列) */
+const PIPES = {
+  "低压流体输送用焊接钢管（SC）": [
+    {label:"DN15", d:16.9, a:224}, {label:"DN20", d:22.5, a:397}, {label:"DN25", d:28.7, a:646},
+    {label:"DN32", d:37.4, a:1098}, {label:"DN40", d:42.8, a:1437}, {label:"DN50", d:54.3, a:2314},
+    {label:"DN65", d:70.1, a:3857}, {label:"DN80", d:82.4, a:5329}, {label:"DN100", d:107.8, a:9122},
+    {label:"DN125", d:132.7, a:13823}, {label:"DN150", d:158.1, a:19621}, {label:"DN200", d:211.1, a:34982}
+  ],
+  "套接紧定式钢管（JDG）": [
+    {label:"Φ16", d:13, a:132}, {label:"Φ20", d:16.8, a:222}, {label:"Φ25", d:21.8, a:373},
+    {label:"Φ32", d:28.8, a:651}, {label:"Φ40", d:36.8, a:1063}, {label:"Φ50", d:46.8, a:1719}
+  ],
+  "聚氯乙烯硬质电线管（PC）": [
+    {label:"Φ16", d:12.2, a:117}, {label:"Φ20", d:15.8, a:196}, {label:"Φ25", d:20.6, a:333},
+    {label:"Φ32", d:26.6, a:556}, {label:"Φ40", d:34.4, a:929}, {label:"Φ50", d:43.2, a:1465}
+  ],
+  "聚氯乙烯半硬质电线管（FPC）": [
+    {label:"Φ16", d:12, a:113}, {label:"Φ20", d:16, a:201}, {label:"Φ25", d:20, a:314},
+    {label:"Φ32", d:26, a:531}, {label:"Φ40", d:34, a:907}, {label:"Φ50", d:44, a:1519}
+  ],
+  "聚氯乙烯（PVC-U）": [
+    {label:"Φ40", d:36.8, a:1064}, {label:"Φ50", d:46.8, a:1720}, {label:"Φ63", d:59.4, a:2771},
+    {label:"Φ75", d:69.4, a:3783}, {label:"Φ90", d:85.6, a:5755}, {label:"Φ100", d:94.8, a:7058},
+    {label:"Φ110", d:104.4, a:8560}, {label:"Φ125", d:118.4, a:11010}, {label:"Φ140", d:133, a:13893},
+    {label:"Φ160", d:152.4, a:18241}
+  ],
+  "聚乙烯（PE）": [
+    {label:"Φ25", d:21.4, a:360}, {label:"Φ32", d:28.4, a:633}, {label:"Φ40", d:36, a:1018},
+    {label:"Φ50", d:45.8, a:1647}, {label:"Φ63", d:58.4, a:2679}, {label:"Φ75", d:70, a:3848},
+    {label:"Φ90", d:84.4, a:5595}, {label:"Φ100", d:92.4, a:6706}, {label:"Φ110", d:101.6, a:8107},
+    {label:"Φ125", d:116.2, a:10605}, {label:"Φ140", d:130.8, a:13437}, {label:"Φ160", d:150.4, a:17766}
+  ],
+  "双壁波纹管": [
+    {label:"Φ100", d:86, a:5809}, {label:"Φ110", d:90, a:6362}, {label:"Φ125", d:105, a:8659},
+    {label:"Φ140", d:118, a:10936}, {label:"Φ160", d:134, a:14103}, {label:"Φ200", d:167, a:21904}
+  ],
+  "套接扣压式薄壁钢导管（KBG）": [
+    {label:"Φ16", d:14, a:153.938}, {label:"Φ20", d:18, a:254.469}, {label:"Φ25", d:22.6, a:401.15},
+    {label:"Φ32", d:29.6, a:688.134}, {label:"Φ40", d:37.6, a:1110.364}
+  ]
+};
+
+/* 管材下拉排序（JDG、KBG、SC、PC、PVC-U、PE、FPC、双壁波纹管） */
+const PIPE_ORDER = [
+  "套接紧定式钢管（JDG）",
+  "套接扣压式薄壁钢导管（KBG）",
+  "低压流体输送用焊接钢管（SC）",
+  "聚氯乙烯硬质电线管（PC）",
+  "聚氯乙烯（PVC-U）",
+  "聚乙烯（PE）",
+  "聚氯乙烯半硬质电线管（FPC）",
+  "双壁波纹管"
+];
+
+/* 桥架规格（规格, 截面积） */
+const BRIDGES = [
+  {spec:"50*50", a:2500}, {spec:"100*50", a:5000}, {spec:"100*100", a:10000},
+  {spec:"150*100", a:15000}, {spec:"200*100", a:20000}, {spec:"300*100", a:30000},
+  {spec:"400*100", a:40000}, {spec:"300*150", a:45000}, {spec:"500*100", a:50000},
+  {spec:"300*200", a:60000}, {spec:"400*150", a:60000}, {spec:"500*150", a:75000},
+  {spec:"400*200", a:80000}, {spec:"800*100", a:80000}, {spec:"600*150", a:90000},
+  {spec:"500*200", a:100000}, {spec:"1000*100", a:100000}, {spec:"600*200", a:120000},
+  {spec:"800*150", a:120000}, {spec:"1000*150", a:150000}, {spec:"800*200", a:160000},
+  {spec:"1000*200", a:200000}
+];
+
+/* 预置线缆清单（复刻原表"已列出的线缆类型和规格"）
+   说明：
+   - 圆形截面线缆截面积 = (外径/2)²×π，由程序计算；
+   - 扁形/矩形截面线缆（皮线光缆、HBYV电话线、电梯随行电缆）截面积按原表"直接引用"的数值给出，
+     此处显式标注 area 字段以避免套用圆形公式造成偏差。 */
+const CABLE_DB = [
+  {cat:"光缆", name:"2芯皮线光缆", od:3, area:6},
+  {cat:"光缆", name:"2芯室内光缆", od:4}, {cat:"光缆", name:"4芯室内光缆", od:4.8},
+  {cat:"光缆", name:"6芯室内光缆", od:5.1}, {cat:"光缆", name:"8芯室内光缆", od:5.6},
+  {cat:"光缆", name:"12芯室内光缆", od:6.2}, {cat:"光缆", name:"24芯室内光缆", od:8.1},
+  {cat:"光缆", name:"36芯室内光缆", od:14.5}, {cat:"光缆", name:"48芯室内光缆", od:14.8},
+  {cat:"光缆", name:"72芯室内光缆", od:17.5}, {cat:"光缆", name:"96芯室内光缆", od:20.7},
+  {cat:"光缆", name:"144芯室内光缆", od:24.8}, {cat:"光缆", name:"2~30芯室外光缆", od:7.8},
+  {cat:"光缆", name:"32~36芯室外光缆", od:8.1}, {cat:"光缆", name:"38~60芯室外光缆", od:9.2},
+  {cat:"光缆", name:"62~72芯室外光缆", od:9.6}, {cat:"光缆", name:"74~96芯室外光缆", od:11},
+  {cat:"光缆", name:"98~120芯室外光缆", od:12}, {cat:"光缆", name:"122~144芯室外光缆", od:13.2},
+  {cat:"光缆", name:"146~216芯室外光缆", od:13.7}, {cat:"光缆", name:"288芯室外光缆", od:15.5},
+
+  {cat:"铜缆·网络", name:"UTP-CAT.5E", od:5.3}, {cat:"铜缆·网络", name:"FTP-CAT.5E", od:6.5},
+  {cat:"铜缆·网络", name:"SFTP-CAT.5E", od:7}, {cat:"铜缆·网络", name:"UTP-CAT.6", od:6},
+  {cat:"铜缆·网络", name:"FTP-CAT.6", od:7.6}, {cat:"铜缆·网络", name:"U/FTP-CAT.6", od:8},
+  {cat:"铜缆·网络", name:"SFTP-CAT.6", od:8}, {cat:"铜缆·网络", name:"UTP-CAT.6A", od:8.4},
+  {cat:"铜缆·网络", name:"FTP-CAT.6A", od:7.3}, {cat:"铜缆·网络", name:"U/FTP-CAT.6A", od:7.5},
+  {cat:"铜缆·网络", name:"SFTP-CAT.6A", od:8.2}, {cat:"铜缆·网络", name:"S/FTP-CAT.7", od:7.5},
+  {cat:"铜缆·网络", name:"S/FTP-CAT.7A", od:7.8}, {cat:"铜缆·网络", name:"S/FTP-CAT.8", od:8.2},
+
+  {cat:"铜缆·电话线", name:"HBYV-1*2*0.4", od:2.55, area:4.4625}, {cat:"铜缆·电话线", name:"HBYV-1*2*0.5", od:2.77, area:5.1799},
+  {cat:"铜缆·电话线", name:"HBYV-2*2*0.4", od:4.2, area:12.81}, {cat:"铜缆·电话线", name:"HBYV-2*2*0.5", od:4.7, area:14.335},
+  {cat:"铜缆·大对数", name:"3类25对大对数", od:11.6}, {cat:"铜缆·大对数", name:"3类50对大对数", od:16.5},
+  {cat:"铜缆·大对数", name:"3类100对大对数", od:21.2}, {cat:"铜缆·大对数", name:"5类25对大对数", od:12.5},
+
+  {cat:"信号线·RVV", name:"RVV-2*0.5", od:5.9}, {cat:"信号线·RVV", name:"RVV-2*0.75", od:6.3},
+  {cat:"信号线·RVV", name:"RVV-2*1.0", od:7.5}, {cat:"信号线·RVV", name:"RVV-2*1.5", od:8.6},
+  {cat:"信号线·RVV", name:"RVV-2*2.5", od:10.6}, {cat:"信号线·RVV", name:"RVV-4*0.75", od:8.3},
+  {cat:"信号线·RVV", name:"RVV-4*1.0", od:9}, {cat:"信号线·RVV", name:"RVV-4*1.5", od:10.5},
+  {cat:"信号线·RVV", name:"RVV-4*2.5", od:12.5}, {cat:"信号线·RVV", name:"RVV-6*0.75", od:9.6},
+  {cat:"信号线·RVV", name:"RVV-6*1.0", od:11}, {cat:"信号线·RVV", name:"RVV-6*1.5", od:13.3},
+  {cat:"信号线·RVV", name:"RVV-6*2.5", od:15.8}, {cat:"信号线·RVV", name:"RVV-8*0.75", od:10.6},
+  {cat:"信号线·RVV", name:"RVV-8*1.0", od:13.2}, {cat:"信号线·RVV", name:"RVV-8*1.5", od:14.2},
+  {cat:"信号线·RVV", name:"RVV-8*2.5", od:17.7},
+  {cat:"信号线·RVS", name:"RVS-2*0.5", od:6}, {cat:"信号线·RVS", name:"RVS-2*0.75", od:6.2},
+  {cat:"信号线·RVS", name:"RVS-2*1.0", od:6.6}, {cat:"信号线·RVS", name:"RVS-2*1.5", od:7.2},
+  {cat:"信号线·RVS", name:"RVS-2*2.5", od:8.2},
+
+  {cat:"信号线·RVVP", name:"RVVP-2*0.5", od:6.8}, {cat:"信号线·RVVP", name:"RVVP-2*0.75", od:7.4},
+  {cat:"信号线·RVVP", name:"RVVP-2*1.0", od:8.2}, {cat:"信号线·RVVP", name:"RVVP-2*1.5", od:9.2},
+  {cat:"信号线·RVVP", name:"RVVP-2*2.5", od:11.7}, {cat:"信号线·RVVP", name:"RVVP-4*0.5", od:8.9},
+  {cat:"信号线·RVVP", name:"RVVP-4*0.75", od:9.3}, {cat:"信号线·RVVP", name:"RVVP-4*1.0", od:10.5},
+  {cat:"信号线·RVVP", name:"RVVP-4*1.5", od:11.5}, {cat:"信号线·RVVP", name:"RVVP-4*2.5", od:13.6},
+  {cat:"信号线·RVVP", name:"RVVP-6*0.5", od:10.2}, {cat:"信号线·RVVP", name:"RVVP-6*0.75", od:10.7},
+  {cat:"信号线·RVVP", name:"RVVP-6*1.0", od:12.4}, {cat:"信号线·RVVP", name:"RVVP-6*1.5", od:13.6},
+  {cat:"信号线·RVVP", name:"RVVP-6*2.5", od:16.1}, {cat:"信号线·RVVP", name:"RVVP-8*0.5", od:11.2},
+  {cat:"信号线·RVVP", name:"RVVP-8*0.75", od:11.8}, {cat:"信号线·RVVP", name:"RVVP-8*1.0", od:13.7},
+  {cat:"信号线·RVVP", name:"RVVP-8*1.5", od:15}, {cat:"信号线·RVVP", name:"RVVP-8*2.5", od:18},
+  {cat:"信号线·RVSP", name:"RVSP-2*0.5", od:6.9}, {cat:"信号线·RVSP", name:"RVSP-2*0.75", od:7.4},
+  {cat:"信号线·RVSP", name:"RVSP-2*1.0", od:8.2}, {cat:"信号线·RVSP", name:"RVSP-2*1.5", od:9.4},
+  {cat:"信号线·RVSP", name:"RVSP-2*2.5", od:11.5},
+
+  {cat:"话筒线", name:"HTP-2*20/0.10", od:6}, {cat:"话筒线", name:"HTP-2*27/0.10", od:6},
+  {cat:"话筒线", name:"HTP-2*37/0.10", od:6}, {cat:"话筒线", name:"HTP-2*48/0.10", od:6},
+  {cat:"话筒线", name:"HTP-3*20/0.10", od:6.15}, {cat:"话筒线", name:"HTP-3*27/0.10", od:6.05},
+  {cat:"话筒线", name:"GYX-2*1.0", od:8.4}, {cat:"话筒线", name:"GYX-2*1.5", od:8.72},
+  {cat:"话筒线", name:"GYX-2*2.0", od:9.14}, {cat:"话筒线", name:"GYX-2*2.5", od:9.62},
+  {cat:"话筒线", name:"GYX-2*3.0", od:10.9}, {cat:"话筒线", name:"GYX-2*3.5", od:11.32},
+  {cat:"话筒线", name:"GYX-2*4.0", od:12.08},
+  {cat:"同轴线缆", name:"SYV-75-5", od:7.5}, {cat:"同轴线缆", name:"SYV-75-7", od:11.6},
+  {cat:"同轴线缆", name:"SYV-75-9", od:12.6}, {cat:"同轴线缆", name:"SYV-75-12", od:15.4},
+  {cat:"同轴线缆", name:"SYWV-75-5", od:7.5}, {cat:"同轴线缆", name:"SYWV-75-7", od:10.6},
+  {cat:"同轴线缆", name:"SYWV-75-9", od:12.6},
+  {cat:"同轴线缆", name:"1/2\"馈线 HCAAYZ 50-12", od:15.7},
+
+  {cat:"电梯随行电缆", name:"TUTP-G1", od:22, area:187},
+  {cat:"电梯随行电缆", name:"TGDFH2B6+2*1.0-G1", od:19.5, area:87.75}
+];
+
+/* ---------- 逻辑 ---------- */
+const RATIO_SINGLE = 0.4;   // 单根利用率
+const RATIO_MULTI  = 0.3;   // 同管多根利用率
+const RATIO_BRIDGE = 0.5;   // 桥架利用率
+
+const CATEGORIES = [...new Set(CABLE_DB.map(c => c.cat))];
+const ALL_CATS = [...CATEGORIES, "自定义"];
+
+function areaOf(od){ return (od/2)*(od/2)*Math.PI; }
+/* 线缆截面积：扁形/矩形截面用显式 area，其余按圆形公式 */
+function cableArea(item){ return (item.area != null) ? item.area : areaOf(item.od); }
+function fmt(n){ return (Math.round(n*100)/100).toLocaleString('zh-CN'); }
+
+/* 向上匹配：在已排序升序的 key 列表中找到第一个 >= value 的项 */
+function lookupGE(arr, keyFn, value){
+  for(const it of arr){ if(keyFn(it) >= value) return it; }
+  return null;
+}
+
+/* 单根管径计算：输入外径od、截面积area、根数qty、管材数组 */
+function pipeFor(od, area, qty, pipes){
+  if(!od || qty <= 0) return {label:"-", area:null};
+  if(qty === 1){
+    const hit = lookupGE(pipes, p => p.d, od / RATIO_SINGLE);
+    if(!hit) return {label:"建议桥架敷设", area:null};
+    return {label:hit.label, area:hit.a};
+  }
+  const hit = lookupGE(pipes, p => p.a, area * qty / RATIO_MULTI);
+  if(!hit) return {label:"建议桥架敷设", area:null};
+  return {label:hit.label, area:hit.a};
+}
+
+/* ---------- 状态 ---------- */
+let rows = [];                 // 已提交的线缆
+let currentPage = 1;
+let pageSize = 10;
+let addState = {cat: ALL_CATS[0], name:"", od:null, area:null, qty:1};
+
+const pipeSel = document.getElementById('pipeType');
+PIPE_ORDER.forEach(k => {
+  if(!PIPES[k]) return;
+  const o = document.createElement('option'); o.value = k; o.textContent = k; pipeSel.appendChild(o);
+});
+
+/* 线缆型号单元格：自定义类别显示文本输入，其余显示该类别下拉 */
+function buildModelCell(cat, name, onSelect, onNameInput){
+  const td = document.createElement('td');
+  if(cat === "自定义"){
+    const inp = document.createElement('input'); inp.type = 'text'; inp.placeholder = '线缆型号（自定）'; inp.value = name || '';
+    inp.oninput = e => onNameInput(e.target.value);
+    td.appendChild(inp);
+  } else {
+    const sel = document.createElement('select');
+    const list = CABLE_DB.filter(c => c.cat === cat);
+    list.forEach(c => {
+      const o = document.createElement('option');
+      o.value = c.name; o.textContent = c.name;
+      if(c.name === name) o.selected = true;
+      sel.appendChild(o);
+    });
+    if(name && !list.some(c => c.name === name)){
+      const o = document.createElement('option'); o.value = name; o.textContent = name + ' (自定义外径)'; o.selected = true; sel.appendChild(o);
+    }
+    sel.onchange = e => {
+      const c = CABLE_DB.find(x => x.cat === cat && x.name === e.target.value);
+      onSelect(c ? c.name : e.target.value, c ? c.od : null, c && c.area != null ? c.area : null);
+    };
+    td.appendChild(sel);
+  }
+  return td;
+}
+
+/* 已知类别且未选型号时，默认取该类别第一个线缆（自动带出外径与截面积） */
+function defaultModelOf(state){
+  if(state.cat !== "自定义" && !state.name){
+    const first = CABLE_DB.find(c => c.cat === state.cat);
+    if(first){ state.name = first.name; state.od = first.od; state.area = (first.area != null) ? first.area : null; }
+  }
+}
+
+/* 提交空白添加行 */
+function commitAdd(){
+  if(!addState.name || !addState.od || addState.od <= 0){ alert('请在添加行填写线缆型号与有效外径'); return; }
+  rows.push({cat: addState.cat, name: addState.name, od: addState.od, area: (addState.area != null) ? addState.area : null, qty: addState.qty || 1});
+  addState = {cat: ALL_CATS[0], name:"", od:null, area:null, qty:1};
+  currentPage = Math.max(1, Math.ceil(rows.length / pageSize));
+  render();
+}
+
+function render(){
+  const body = document.getElementById('cableBody');
+  body.innerHTML = '';
+  const pipes = PIPES[pipeSel.value];
+  const total = Math.max(1, Math.ceil(rows.length / pageSize));
+  if(currentPage > total) currentPage = total;
+  const start = (currentPage - 1) * pageSize;
+  const pageRows = rows.slice(start, start + pageSize);
+
+  pageRows.forEach((r, idx) => {
+    const gi = start + idx;
+    const tr = document.createElement('tr');
+
+    const tdCat = document.createElement('td');
+    const catSel = document.createElement('select');
+    ALL_CATS.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; if(c === r.cat) o.selected = true; catSel.appendChild(o); });
+    catSel.onchange = e => { r.cat = e.target.value; r.name = ''; r.od = null; r.area = null; render(); };
+    tdCat.appendChild(catSel);
+
+    defaultModelOf(r);
+    const tdModel = buildModelCell(r.cat, r.name,
+      (name, od, area) => { r.name = name; r.od = od; r.area = area; render(); },
+      (v) => { r.name = v; }
+    );
+
+    const tdOd = document.createElement('td');
+    const odInp = document.createElement('input'); odInp.type = 'number'; odInp.step = '0.1'; odInp.placeholder = '外径'; odInp.value = (r.od == null ? '' : r.od);
+    tdOd.appendChild(odInp);
+
+    const tdArea = document.createElement('td');
+    tdArea.textContent = r.od ? fmt(cableArea(r)) : '-';
+
+    const tdQty = document.createElement('td');
+    const qInp = document.createElement('input'); qInp.type = 'number'; qInp.step = '1'; qInp.min = '0'; qInp.value = r.qty; qInp.style.width = '64px';
+    tdQty.appendChild(qInp);
+
+    const tdRes = document.createElement('td'); tdRes.className = 'row-result';
+    const a0 = cableArea(r);
+    const pr0 = pipeFor(r.od, a0, r.qty, pipes); tdRes.textContent = pr0.label;
+    if(pr0.label === '建议桥架敷设') tdRes.classList.add('warn');
+
+    const tdOp = document.createElement('td');
+    const del = document.createElement('button'); del.className = 'btn btn-ghost btn-sm'; del.textContent = '删除';
+    del.onclick = () => {
+      rows.splice(gi, 1);
+      const t = Math.max(1, Math.ceil(rows.length / pageSize));
+      if(currentPage > t) currentPage = t;
+      render();
+    };
+    tdOp.appendChild(del);
+
+    odInp.oninput = e => {
+      r.od = parseFloat(e.target.value) || null; r.area = null;
+      tdArea.textContent = r.od ? fmt(cableArea(r)) : '-';
+      const p = pipeFor(r.od, cableArea(r), r.qty, pipes);
+      tdRes.textContent = p.label; tdRes.classList.toggle('warn', p.label === '建议桥架敷设');
+      renderSummary();
+    };
+    qInp.oninput = e => {
+      r.qty = parseInt(e.target.value) || 0;
+      const p = pipeFor(r.od, cableArea(r), r.qty, pipes);
+      tdRes.textContent = p.label; tdRes.classList.toggle('warn', p.label === '建议桥架敷设');
+      renderSummary();
+    };
+
+    tr.append(tdCat, tdModel, tdOd, tdArea, tdQty, tdRes, tdOp);
+    body.appendChild(tr);
+  });
+
+  /* 最后一页始终追加一行空白"添加行" */
+  if(currentPage === total){
+    const tr = document.createElement('tr'); tr.className = 'add-row-tr';
+    const tdCat = document.createElement('td');
+    const catSel = document.createElement('select');
+    ALL_CATS.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; if(c === addState.cat) o.selected = true; catSel.appendChild(o); });
+    catSel.onchange = e => { addState.cat = e.target.value; addState.name = ''; addState.od = null; addState.area = null; render(); };
+    tdCat.appendChild(catSel);
+
+    defaultModelOf(addState);
+    const tdModel = buildModelCell(addState.cat, addState.name,
+      (name, od, area) => { addState.name = name; addState.od = od; addState.area = area; render(); },
+      (v) => { addState.name = v; }
+    );
+
+    const tdOd = document.createElement('td');
+    const odInp = document.createElement('input'); odInp.type = 'number'; odInp.step = '0.1'; odInp.placeholder = '外径'; odInp.value = (addState.od == null ? '' : addState.od);
+    tdOd.appendChild(odInp);
+
+    const tdArea = document.createElement('td');
+    tdArea.textContent = addState.od ? fmt(cableArea(addState)) : '-';
+
+    const tdQty = document.createElement('td');
+    const qInp = document.createElement('input'); qInp.type = 'number'; qInp.step = '1'; qInp.min = '0'; qInp.value = addState.qty; qInp.style.width = '64px';
+    tdQty.appendChild(qInp);
+
+    const tdRes = document.createElement('td'); tdRes.className = 'row-result';
+    const aa = cableArea(addState);
+    const apr = pipeFor(addState.od, aa, addState.qty, pipes); tdRes.textContent = apr.label;
+    if(apr.label === '建议桥架敷设') tdRes.classList.add('warn');
+
+    const tdOp = document.createElement('td');
+    const addBtn = document.createElement('button'); addBtn.className = 'btn btn-primary btn-sm'; addBtn.textContent = '添加';
+    addBtn.onclick = commitAdd;
+    tdOp.appendChild(addBtn);
+
+    odInp.oninput = e => {
+      addState.od = parseFloat(e.target.value) || null; addState.area = null;
+      tdArea.textContent = addState.od ? fmt(cableArea(addState)) : '-';
+      const p = pipeFor(addState.od, cableArea(addState), addState.qty, pipes);
+      tdRes.textContent = p.label; tdRes.classList.toggle('warn', p.label === '建议桥架敷设');
+    };
+    qInp.oninput = e => {
+      addState.qty = parseInt(e.target.value) || 0;
+      const p = pipeFor(addState.od, cableArea(addState), addState.qty, pipes);
+      tdRes.textContent = p.label; tdRes.classList.toggle('warn', p.label === '建议桥架敷设');
+    };
+
+    tr.append(tdCat, tdModel, tdOd, tdArea, tdQty, tdRes, tdOp);
+    body.appendChild(tr);
+  }
+
+  renderSummary();
+  renderPager();
+}
+
+function renderSummary(){
+  const pipes = PIPES[pipeSel.value];
+  let totalQty = 0, totalArea = 0;
+  rows.forEach(r => {
+    if(r.od && r.qty > 0){ totalQty += r.qty; totalArea += cableArea(r) * r.qty; }
+  });
+  document.getElementById('sumQty').textContent = totalQty;
+  document.getElementById('sumArea').textContent = totalArea ? fmt(totalArea) : '0';
+
+  let pipeLabel = '-', pipeArea = null;
+  if(totalQty > 0){
+    if(totalQty === 1){
+      const only = rows.find(r => r.od && r.qty > 0);
+      const pr = pipeFor(only.od, cableArea(only), 1, pipes);
+      pipeLabel = pr.label; pipeArea = pr.area;
+    } else {
+      const hit = lookupGE(pipes, p => p.a, totalArea / RATIO_MULTI);
+      if(!hit){ pipeLabel = '建议桥架敷设'; }
+      else { pipeLabel = hit.label; pipeArea = hit.a; }
+    }
+  }
+  const pe = document.getElementById('suggestPipe'); pe.textContent = pipeLabel;
+  pe.classList.toggle('warn', pipeLabel === '建议桥架敷设');
+  document.getElementById('pipeArea').textContent = pipeArea != null ? fmt(pipeArea) : '-';
+
+  let bridgeSpec = '-', bridgeArea = null;
+  if(totalArea > 0){
+    const hit = lookupGE(BRIDGES, b => b.a, totalArea / RATIO_BRIDGE);
+    if(!hit){ bridgeSpec = '线缆过多，请手动选择桥架'; }
+    else { bridgeSpec = hit.spec; bridgeArea = hit.a; }
+  }
+  const be = document.getElementById('suggestBridge'); be.textContent = bridgeSpec;
+  be.classList.toggle('warn', bridgeSpec.indexOf('请手动') >= 0);
+  document.getElementById('bridgeArea').textContent = bridgeArea != null ? fmt(bridgeArea) : '-';
+
+  const msg = document.getElementById('msg');
+  if(totalQty === 0) msg.textContent = '请在上方添加行选择 / 填写线缆后，自动计算建议管径与桥架规格。';
+  else if(pipeLabel === '建议桥架敷设') msg.textContent = '⚠️ 当前管材最大规格仍无法满足利用率要求，建议改用桥架敷设。';
+  else msg.textContent = '已按【' + pipeSel.value + '】计算。';
+}
+
+/* 分页 */
+function pageNumbers(cur, total){
+  if(total <= 7) return Array.from({length: total}, (_, i) => i + 1);
+  const res = [1];
+  if(cur > 3) res.push('...');
+  for(let n = Math.max(2, cur - 1); n <= Math.min(total - 1, cur + 1); n++) res.push(n);
+  if(cur < total - 2) res.push('...');
+  res.push(total);
+  return res;
+}
+function renderPager(){
+  const pager = document.getElementById('pager');
+  pager.innerHTML = '';
+  const total = Math.max(1, Math.ceil(rows.length / pageSize));
+  if(currentPage > total) currentPage = total;
+  const mk = (label, page, opts) => {
+    opts = opts || {};
+    const b = document.createElement('button'); b.textContent = label;
+    if(opts.active) b.classList.add('active');
+    if(opts.disabled) b.disabled = true;
+    else b.onclick = () => { currentPage = page; render(); };
+    return b;
+  };
+  pager.appendChild(mk('« 首页', 1, {disabled: currentPage === 1}));
+  pager.appendChild(mk('‹ 上一页', currentPage - 1, {disabled: currentPage === 1}));
+  pageNumbers(currentPage, total).forEach(n => {
+    if(n === '...'){ const s = document.createElement('span'); s.textContent = '…'; s.style.color = 'var(--muted)'; pager.appendChild(s); }
+    else pager.appendChild(mk(String(n), n, {active: n === currentPage}));
+  });
+  pager.appendChild(mk('› 下一页', currentPage + 1, {disabled: currentPage === total}));
+  pager.appendChild(mk('» 末页', total, {disabled: currentPage === total}));
+  const info = document.createElement('span'); info.className = 'pg-info';
+  info.textContent = '每页 ' + pageSize + ' 行 · 第 ' + currentPage + ' / ' + total + ' 页 · 共 ' + rows.length + ' 条线缆';
+  pager.appendChild(info);
+}
+
+/* 导出 Excel（纯前端，.xls） */
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function exportExcel(){
+  const pipes = PIPES[pipeSel.value];
+  let totalQty = 0, totalArea = 0;
+  rows.forEach(r => { if(r.od && r.qty > 0){ totalQty += r.qty; totalArea += cableArea(r) * r.qty; } });
+  let pipeLabel = '-', pipeArea = null;
+  if(totalQty > 0){
+    if(totalQty === 1){
+      const only = rows.find(r => r.od && r.qty > 0);
+      const pr = pipeFor(only.od, cableArea(only), 1, pipes); pipeLabel = pr.label; pipeArea = pr.area;
+    } else {
+      const hit = lookupGE(pipes, p => p.a, totalArea / RATIO_MULTI);
+      if(hit){ pipeLabel = hit.label; pipeArea = hit.a; } else pipeLabel = '建议桥架敷设';
+    }
+  }
+  let bridgeSpec = '-', bridgeArea = null;
+  if(totalArea > 0){
+    const hit = lookupGE(BRIDGES, b => b.a, totalArea / RATIO_BRIDGE);
+    if(hit){ bridgeSpec = hit.spec; bridgeArea = hit.a; } else bridgeSpec = '线缆过多，请手动选择桥架';
+  }
+  let html = '<table border="1" cellspacing="0">';
+  html += '<tr><td colspan="6" style="font-weight:bold;font-size:14px">弱电智能化 · 线缆穿管 / 桥架规格计算器</td></tr>';
+  html += '<tr><td colspan="6">管材类型：' + esc(pipeSel.value) + '</td></tr>';
+  html += '<tr><td colspan="6">计算依据：GB 51348-2019 26.5.7（管径40% / 截面30% / 截面50%）</td></tr>';
+  html += '<tr><th>类别</th><th>线缆型号</th><th>外径(mm)</th><th>截面积(mm²)</th><th>根数</th><th>建议管径</th></tr>';
+  rows.forEach(r => {
+    const pr = pipeFor(r.od, cableArea(r), r.qty, pipes);
+    html += '<tr><td>' + esc(r.cat) + '</td><td>' + esc(r.name) + '</td><td>' + (r.od || '') + '</td><td>' + (r.od ? fmt(cableArea(r)) : '') + '</td><td>' + (r.qty || 0) + '</td><td>' + esc(pr.label) + '</td></tr>';
+  });
+  if(rows.length === 0) html += '<tr><td colspan="6">（未添加线缆）</td></tr>';
+  html += '<tr><td colspan="6"></td></tr>';
+  html += '<tr><td colspan="6" style="font-weight:bold">汇总结果</td></tr>';
+  html += '<tr><td colspan="3">线缆总根数</td><td colspan="3">' + totalQty + '</td></tr>';
+  html += '<tr><td colspan="3">线缆总截面积 (mm²)</td><td colspan="3">' + fmt(totalArea) + '</td></tr>';
+  html += '<tr><td colspan="3">建议管径（汇总）</td><td colspan="3">' + esc(pipeLabel) + '</td></tr>';
+  html += '<tr><td colspan="3">线管截面积 (mm²)</td><td colspan="3">' + (pipeArea != null ? fmt(pipeArea) : '-') + '</td></tr>';
+  html += '<tr><td colspan="3">建议桥架规格</td><td colspan="3">' + esc(bridgeSpec) + '</td></tr>';
+  html += '<tr><td colspan="3">桥架截面积 (mm²)</td><td colspan="3">' + (bridgeArea != null ? fmt(bridgeArea) : '-') + '</td></tr>';
+  html += '</table>';
+  const blob = new Blob(['\ufeff' + html], {type: 'application/vnd.ms-excel;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url;
+  const now = new Date();
+  const ts = now.getFullYear() + String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0') + '_' + String(now.getHours()).padStart(2, '0') + String(now.getMinutes()).padStart(2, '0');
+  a.download = '线缆穿管桥架计算_' + ts + '.xls';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/* 事件 */
+document.getElementById('addBtn').onclick = commitAdd;
+document.getElementById('resetBtn').onclick = () => {
+  rows = []; currentPage = 1;
+  addState = {cat: ALL_CATS[0], name:"", od:null, area:null, qty:1};
+  render();
+};
+document.getElementById('exportBtn').onclick = exportExcel;
+pipeSel.onchange = () => render();
+document.querySelectorAll('.page-size-ctl button').forEach(b => {
+  b.onclick = () => {
+    pageSize = parseInt(b.dataset.size); currentPage = 1;
+    document.querySelectorAll('.page-size-ctl button').forEach(x => x.classList.toggle('active', x === b));
+    render();
+  };
+});
+/* 初始高亮当前显示行数 */
+document.querySelectorAll('.page-size-ctl button').forEach(x => x.classList.toggle('active', parseInt(x.dataset.size) === pageSize));
+
+/* 初始：空白列表 + 始终存在的添加行 */
+render();
+</script>
+</body>
+</html>
