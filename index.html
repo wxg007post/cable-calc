@@ -415,7 +415,8 @@ function lookupGE(arr, keyFn, value){
 function pipeFor(od, area, qty, pipes, mode){
   if((od == null && area == null) || qty <= 0) return {label:"-", area:null};
   if(mode.singleBranch && qty === 1){
-    const hit = lookupGE(pipes, p => p.d, od / mode.ratioSingle);
+    const ca = (area != null) ? area : areaOf(od);
+    const hit = lookupGE(pipes, p => p.a, ca / mode.ratioSingle);
     if(!hit) return {label:"建议桥架敷设", area:null};
     return {label:hit.label, area:hit.a};
   }
