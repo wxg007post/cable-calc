@@ -121,7 +121,7 @@
 <body>
 <div class="wrap">
   <header class="page-head">
-    <h1>弱电智能化 · 线缆穿管 / 桥架规格计算器</h1>
+    <h1>弱电智能化 · 常用线缆穿管 / 桥架规格计算器</h1>
     <div class="src">依据《民用建筑电气设计标准》GB 51348-2019 · 参考图集 19DX101-1</div>
   </header>
 
@@ -657,7 +657,7 @@ function renderSummary(){
 
   const msg = document.getElementById('msg');
   if(totalQty === 0) msg.textContent = '请在上方添加行选择 / 填写线缆后，自动计算建议管径与桥架规格。';
-  else if(pipeLabel === '建议桥架敷设') msg.textContent = '⚠️ 当前管材最大规格仍无法满足利用率要求，建议改用桥架敷设。';
+  else if(pipeLabel === '建议桥架敷设') msg.textContent = '当前管材最大规格仍无法满足利用率要求，建议桥架敷设。';
   else msg.textContent = '已按【' + pipeSel.value + '】计算。';
 }
 
