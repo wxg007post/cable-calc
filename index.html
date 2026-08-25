@@ -60,7 +60,10 @@
     font-size: 12px; font-weight: 400; color: var(--brand);
     background: var(--brand-soft); padding: 2px 8px; border-radius: 6px;
   }
-  .basis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+  .basis-grid { display: grid; gap: 12px; }
+  .basis-grid.weak { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .basis-grid.strong { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @media (max-width: 760px){ .basis-grid.weak, .basis-grid.strong { grid-template-columns: 1fr; } }
   .basis-item { border: 1px dashed var(--line); border-radius: 10px; padding: 12px 14px; background: #fafbfc; }
   .basis-item .t { font-weight: 600; margin-bottom: 4px; }
   .basis-item .d { font-size: 13px; color: var(--muted); }
@@ -182,7 +185,7 @@
     <div class="summary">
       <div class="stat"><div class="k">线缆总根数</div><div class="val" id="sumQty">0</div></div>
       <div class="stat"><div class="k">线缆总截面积 (mm²)</div><div class="val" id="sumArea">0</div></div>
-      <div class="stat"><div class="k">建议管径（汇总）</div><div class="val" id="suggestPipe">-</div></div>
+      <div class="stat"><div class="k">建议管径</div><div class="val" id="suggestPipe">-</div></div>
       <div class="stat"><div class="k">线管截面积 (mm²)</div><div class="val" id="pipeArea">-</div></div>
       <div class="stat"><div class="k">建议桥架规格</div><div class="val" id="suggestBridge">-</div></div>
       <div class="stat"><div class="k">桥架截面积 (mm²)</div><div class="val" id="bridgeArea">-</div></div>
@@ -252,7 +255,7 @@ const BRIDGES = [
   {spec:"50*50", a:2500}, {spec:"100*50", a:5000}, {spec:"100*100", a:10000},
   {spec:"150*100", a:15000}, {spec:"200*100", a:20000}, {spec:"300*100", a:30000},
   {spec:"400*100", a:40000}, {spec:"300*150", a:45000}, {spec:"500*100", a:50000},
-  {spec:"300*200", a:60000}, {spec:"400*150", a:60000}, {spec:"500*150", a:75000},
+  {spec:"300*200", a:60000}, {spec:"400*150", a:60000}, {spec:"600*100", a:60000}, {spec:"500*150", a:75000},
   {spec:"400*200", a:80000}, {spec:"800*100", a:80000}, {spec:"600*150", a:90000},
   {spec:"500*200", a:100000}, {spec:"1000*100", a:100000}, {spec:"600*200", a:120000},
   {spec:"800*150", a:120000}, {spec:"1000*150", a:150000}, {spec:"800*200", a:160000},
@@ -268,14 +271,14 @@ const WEAK_CABLE_DB = [
   {cat:"光缆", name:"2芯皮线光缆", od:3, area:6},
   {cat:"光缆", name:"2芯室内光缆", od:4}, {cat:"光缆", name:"4芯室内光缆", od:4.8},
   {cat:"光缆", name:"6芯室内光缆", od:5.1}, {cat:"光缆", name:"8芯室内光缆", od:5.6},
-  {cat:"光缆", name:"12芯室内光缆", od:6.2}, {cat:"光缆", name:"24芯室内光缆", od:8.1},
-  {cat:"光缆", name:"36芯室内光缆", od:14.5}, {cat:"光缆", name:"48芯室内光缆", od:14.8},
-  {cat:"光缆", name:"72芯室内光缆", od:17.5}, {cat:"光缆", name:"96芯室内光缆", od:20.7},
-  {cat:"光缆", name:"144芯室内光缆", od:24.8}, {cat:"光缆", name:"2~30芯室外光缆", od:7.8},
-  {cat:"光缆", name:"32~36芯室外光缆", od:8.1}, {cat:"光缆", name:"38~60芯室外光缆", od:9.2},
-  {cat:"光缆", name:"62~72芯室外光缆", od:9.6}, {cat:"光缆", name:"74~96芯室外光缆", od:11},
-  {cat:"光缆", name:"98~120芯室外光缆", od:12}, {cat:"光缆", name:"122~144芯室外光缆", od:13.2},
-  {cat:"光缆", name:"146~216芯室外光缆", od:13.7}, {cat:"光缆", name:"288芯室外光缆", od:15.5},
+  {cat:"光缆", name:"12芯室内光缆", od:6.2, dx:true}, {cat:"光缆", name:"24芯室内光缆", od:8.1, dx:true},
+  {cat:"光缆", name:"36芯室内光缆", od:14.5, dx:true}, {cat:"光缆", name:"48芯室内光缆", od:14.8, dx:true},
+  {cat:"光缆", name:"72芯室内光缆", od:17.5, dx:true}, {cat:"光缆", name:"96芯室内光缆", od:20.7, dx:true},
+  {cat:"光缆", name:"144芯室内光缆", od:24.8, dx:true}, {cat:"光缆", name:"2~30芯室外光缆", od:7.8, dx:true},
+  {cat:"光缆", name:"32~36芯室外光缆", od:8.1, dx:true}, {cat:"光缆", name:"38~60芯室外光缆", od:9.2, dx:true},
+  {cat:"光缆", name:"62~72芯室外光缆", od:9.6, dx:true}, {cat:"光缆", name:"74~96芯室外光缆", od:11, dx:true},
+  {cat:"光缆", name:"98~120芯室外光缆", od:12, dx:true}, {cat:"光缆", name:"122~144芯室外光缆", od:13.2, dx:true},
+  {cat:"光缆", name:"146~216芯室外光缆", od:13.7, dx:true}, {cat:"光缆", name:"288芯室外光缆", od:15.5, dx:true},
 
   {cat:"铜缆·网络", name:"UTP-CAT.5E", od:5.3}, {cat:"铜缆·网络", name:"FTP-CAT.5E", od:6.5},
   {cat:"铜缆·网络", name:"SFTP-CAT.5E", od:7}, {cat:"铜缆·网络", name:"UTP-CAT.6", od:6},
@@ -287,8 +290,8 @@ const WEAK_CABLE_DB = [
 
   {cat:"铜缆·电话线", name:"HBYV-1*2*0.4", od:2.55, area:4.4625}, {cat:"铜缆·电话线", name:"HBYV-1*2*0.5", od:2.77, area:5.1799},
   {cat:"铜缆·电话线", name:"HBYV-2*2*0.4", od:4.2, area:12.81}, {cat:"铜缆·电话线", name:"HBYV-2*2*0.5", od:4.7, area:14.335},
-  {cat:"铜缆·大对数", name:"3类25对大对数", od:11.6}, {cat:"铜缆·大对数", name:"3类50对大对数", od:16.5},
-  {cat:"铜缆·大对数", name:"3类100对大对数", od:21.2}, {cat:"铜缆·大对数", name:"5类25对大对数", od:12.5},
+  {cat:"铜缆·大对数", name:"3类25对大对数", od:11.6, dx:true}, {cat:"铜缆·大对数", name:"3类50对大对数", od:16.5, dx:true},
+  {cat:"铜缆·大对数", name:"3类100对大对数", od:21.2, dx:true}, {cat:"铜缆·大对数", name:"5类25对大对数", od:12.5, dx:true},
 
   {cat:"信号线·RVV", name:"RVV-2*0.5", od:5.9}, {cat:"信号线·RVV", name:"RVV-2*0.75", od:6.3},
   {cat:"信号线·RVV", name:"RVV-2*1.0", od:7.5}, {cat:"信号线·RVV", name:"RVV-2*1.5", od:8.6},
@@ -373,13 +376,14 @@ const STRONG_CABLE_DB = [
 /* 计算依据卡片（随标签页切换） */
 const BASIS = {
   weak: [
-    {t:"① 单根大对数 / 单根光缆 / 单根主干", d:"26.5.7 1 单根25对及以上的大对数对绞电缆、12芯及以上光缆或单根其他弱电主干线缆，当在1根直线导管内敷设时，其管径利用率不宜大于50%；当在1根弯曲段导管内敷设时，其管径利用率不宜大于40%。", v:"管径利用率 ≤ 40%"},
-    {t:"② 同管多根线缆", d:"26.5.7 2 同一根导管内敷设多根4对对绞电缆或多根4芯及以下配线光缆或多根其他弱电线缆时，其管径截面积利用率不应大于30%。", v:"管截面积利用率 ≤ 30%"},
-    {t:"③ 同槽盒（桥架）多根", d:"26.5.7 3 同一根槽盒内可同时敷设多根电缆或光缆，其电缆槽盒截面积利用率不应大于50%。", v:"桥架截面积利用率 ≤ 50%"}
+    {t:"① 单根大对数 / 光缆 / 主干穿管", d:"26.5.7 1 单根25对及以上的大对数对绞电缆、12芯及以上光缆或单根其他弱电主干线缆，当在1根直线导管内敷设时，其管径利用率不宜大于50%；当在1根弯曲段导管内敷设时，其管径利用率不宜大于40%。", v:"管径利用率 ≤ 40%"},
+    {t:"② 单根其他线缆穿管", d:"8.3.3 穿导管的绝缘电线，其总截面积（包括外护层）不应超过导管内截面积的40%。", v:"管截面积利用率 ≤ 40%"},
+    {t:"③ 多根线缆穿管", d:"26.5.7 2 同一根导管内敷设多根4对对绞电缆或多根4芯及以下配线光缆或多根其他弱电线缆时，其管径截面积利用率不应大于30%。", v:"管截面积利用率 ≤ 30%"},
+    {t:"④ 桥架敷设线缆", d:"26.5.7 3 同一根槽盒内可同时敷设多根电缆或光缆，其电缆槽盒截面积利用率不应大于50%。", v:"桥架截面积利用率 ≤ 50%"}
   ],
   strong: [
-    {t:"① 同管敷设多根电力线缆", d:"8.3.3 穿导管的绝缘电线，其总截面积（包括外护层）不应超过导管内截面积的40%。", v:"管径利用率 ≤ 40%"},
-    {t:"② 同槽盒（桥架）敷设多根", d:"8.5.8 槽盒内电缆的总截面积（包括外护层）不应超过槽盒内截面积的40%，且电缆根数不宜超过30根。", v:"桥架截面积利用率 ≤ 40%"}
+    {t:"① 线缆穿管", d:"8.3.3 穿导管的绝缘电线，其总截面积（包括外护层）不应超过导管内截面积的40%。", v:"管截面积利用率 ≤ 40%"},
+    {t:"② 桥架敷设线缆", d:"8.5.8 槽盒内电缆的总截面积（包括外护层）不应超过槽盒内截面积的40%，且电缆根数不宜超过30根。", v:"桥架截面积利用率 ≤ 40%"}
   ]
 };
 
@@ -411,18 +415,45 @@ function lookupGE(arr, keyFn, value){
   return null;
 }
 
-/* 单根管径计算：输入外径od、截面积area、根数qty、管材数组、计算模式mode */
-function pipeFor(od, area, qty, pipes, mode){
+/* 单根管径计算：输入外径od、截面积area、根数qty、管材数组、计算模式mode、主干标记dx
+ * 对齐新版弱电 Excel（常用线缆穿管、桥架计算表 - 弱电智能化（新）.xlsx）名称管理器 RDDXWJ：
+ *  - 弱电单根：利用率 0.4；dx 标记（RDDXWJ：12芯+室内光缆 / 全部室外光缆 / 25对+大对数）
+ *    按"外径/0.4"比对管材内径；其余弱电线缆按"截面积/0.4"比对管材内截面积
+ *  - 弱电多根：利用率 0.3，按"总截面积/0.3"比对管材内截面积
+ *  - 强电页：沿用 TABS.strong（管径 0.4 / 桥架 0.4），不受影响
+ */
+function pipeFor(od, area, qty, pipes, mode, dx){
   if((od == null && area == null) || qty <= 0) return {label:"-", area:null};
-  if(mode.singleBranch && qty === 1){
-    const ca = (area != null) ? area : areaOf(od);
-    const hit = lookupGE(pipes, p => p.a, ca / mode.ratioSingle);
+  let m = mode;
+  if(mode === TABS.weak){
+    m = {singleBranch:true, singleDiameter:!!dx, ratioSingle:0.4, ratioMulti:0.3, ratioBridge:0.5};
+  }
+  const ca = (area != null) ? area : areaOf(od);
+  if(m.singleBranch && qty === 1){
+    if(m.singleDiameter){
+      const hit = (od != null)
+        ? lookupGE(pipes, p => p.d, od / m.ratioSingle)
+        : lookupGE(pipes, p => p.a, ca / m.ratioSingle);
+      if(!hit) return {label:"建议桥架敷设", area:null};
+      return {label:hit.label, area:hit.a};
+    }
+    const hit = lookupGE(pipes, p => p.a, ca / m.ratioSingle);
     if(!hit) return {label:"建议桥架敷设", area:null};
     return {label:hit.label, area:hit.a};
   }
-  const hit = lookupGE(pipes, p => p.a, area * qty / mode.ratioMulti);
+  const hit = lookupGE(pipes, p => p.a, ca * qty / m.ratioMulti);
   if(!hit) return {label:"建议桥架敷设", area:null};
   return {label:hit.label, area:hit.a};
+}
+
+/* 桥架规格：截面积相同的规格（如 300*200、400*150、600*100 均为 60000）一并显示 */
+function bridgeSpecFor(totalArea, ratio){
+  const need = totalArea / ratio;
+  let minA = null;
+  for(const b of BRIDGES){ if(b.a >= need){ if(minA === null || b.a < minA) minA = b.a; } }
+  if(minA === null) return {spec:'线缆过多，请手动选择桥架', area:null};
+  const specs = BRIDGES.filter(b => b.a === minA).map(b => b.spec).join(' / ');
+  return {spec:specs, area:minA};
 }
 
 /* ---------- 填充管材下拉（全局，两页共用） ---------- */
@@ -528,7 +559,7 @@ function render(){
 
     const tdRes = document.createElement('td'); tdRes.className = 'row-result';
     const a0 = cableArea(r);
-    const pr0 = pipeFor(r.od, a0, r.qty, pipes, mode); tdRes.textContent = pr0.label;
+    const pr0 = pipeFor(r.od, a0, r.qty, pipes, mode, r.dx); tdRes.textContent = pr0.label;
     if(pr0.label === '建议桥架敷设') tdRes.classList.add('warn');
 
     const tdOp = document.createElement('td');
@@ -545,14 +576,14 @@ function render(){
       odInp.oninput = e => {
         r.od = parseFloat(e.target.value) || null; r.area = null;
         tdArea.textContent = (r.od || r.area != null) ? fmt(cableArea(r)) : '-';
-        const p = pipeFor(r.od, cableArea(r), r.qty, pipes, mode);
+        const p = pipeFor(r.od, cableArea(r), r.qty, pipes, mode, r.dx);
         tdRes.textContent = p.label; tdRes.classList.toggle('warn', p.label === '建议桥架敷设');
         renderSummary();
       };
     }
     qInp.oninput = e => {
       r.qty = parseInt(e.target.value) || 0;
-      const p = pipeFor(r.od, cableArea(r), r.qty, pipes, mode);
+      const p = pipeFor(r.od, cableArea(r), r.qty, pipes, mode, r.dx);
       tdRes.textContent = p.label; tdRes.classList.toggle('warn', p.label === '建议桥架敷设');
       renderSummary();
     };
@@ -590,7 +621,7 @@ function render(){
 
     const tdRes = document.createElement('td'); tdRes.className = 'row-result';
     const aa = cableArea(st);
-    const apr = pipeFor(st.od, aa, st.qty, pipes, mode); tdRes.textContent = apr.label;
+    const apr = pipeFor(st.od, aa, st.qty, pipes, mode, st.dx); tdRes.textContent = apr.label;
     if(apr.label === '建议桥架敷设') tdRes.classList.add('warn');
 
     const tdOp = document.createElement('td');
@@ -602,13 +633,13 @@ function render(){
       odInp.oninput = e => {
         st.od = parseFloat(e.target.value) || null; st.area = null;
         tdArea.textContent = (st.od || st.area != null) ? fmt(cableArea(st)) : '-';
-        const p = pipeFor(st.od, cableArea(st), st.qty, pipes, mode);
+        const p = pipeFor(st.od, cableArea(st), st.qty, pipes, mode, st.dx);
         tdRes.textContent = p.label; tdRes.classList.toggle('warn', p.label === '建议桥架敷设');
       };
     }
     qInp.oninput = e => {
       st.qty = parseInt(e.target.value) || 0;
-      const p = pipeFor(st.od, cableArea(st), st.qty, pipes, mode);
+      const p = pipeFor(st.od, cableArea(st), st.qty, pipes, mode, st.dx);
       tdRes.textContent = p.label; tdRes.classList.toggle('warn', p.label === '建议桥架敷设');
     };
 
@@ -635,7 +666,7 @@ function renderSummary(){
   if(totalQty > 0){
     if(totalQty === 1){
       const only = t.rows.find(r => (r.od || r.area != null) && r.qty > 0);
-      const pr = pipeFor(only.od, cableArea(only), 1, pipes, mode);
+      const pr = pipeFor(only.od, cableArea(only), 1, pipes, mode, only.dx);
       pipeLabel = pr.label; pipeArea = pr.area;
     } else {
       const hit = lookupGE(pipes, p => p.a, totalArea / mode.ratioMulti);
@@ -649,9 +680,8 @@ function renderSummary(){
 
   let bridgeSpec = '-', bridgeArea = null;
   if(totalArea > 0){
-    const hit = lookupGE(BRIDGES, b => b.a, totalArea / mode.ratioBridge);
-    if(!hit){ bridgeSpec = '线缆过多，请手动选择桥架'; }
-    else { bridgeSpec = hit.spec; bridgeArea = hit.a; }
+    const bs = bridgeSpecFor(totalArea, mode.ratioBridge);
+    bridgeSpec = bs.spec; bridgeArea = bs.area;
   }
   const be = document.getElementById('suggestBridge'); be.textContent = bridgeSpec;
   be.classList.toggle('warn', bridgeSpec.indexOf('请手动') >= 0);
@@ -703,6 +733,7 @@ function renderPager(){
 /* 计算依据卡片渲染 */
 function renderBasis(){
   const grid = document.getElementById('basisGrid');
+  grid.className = 'basis-grid ' + activeTab;
   grid.innerHTML = '';
   BASIS[activeTab].forEach(it => {
     const d = document.createElement('div'); d.className = 'basis-item';
@@ -723,7 +754,7 @@ function exportExcel(){
   if(totalQty > 0){
     if(totalQty === 1){
       const only = t.rows.find(r => (r.od || r.area != null) && r.qty > 0);
-      const pr = pipeFor(only.od, cableArea(only), 1, pipes, mode); pipeLabel = pr.label; pipeArea = pr.area;
+      const pr = pipeFor(only.od, cableArea(only), 1, pipes, mode, only.dx); pipeLabel = pr.label; pipeArea = pr.area;
     } else {
       const hit = lookupGE(pipes, p => p.a, totalArea / mode.ratioMulti);
       if(hit){ pipeLabel = hit.label; pipeArea = hit.a; } else pipeLabel = '建议桥架敷设';
@@ -731,8 +762,8 @@ function exportExcel(){
   }
   let bridgeSpec = '-', bridgeArea = null;
   if(totalArea > 0){
-    const hit = lookupGE(BRIDGES, b => b.a, totalArea / mode.ratioBridge);
-    if(hit){ bridgeSpec = hit.spec; bridgeArea = hit.a; } else bridgeSpec = '线缆过多，请手动选择桥架';
+    const bs = bridgeSpecFor(totalArea, mode.ratioBridge);
+    bridgeSpec = bs.spec; bridgeArea = bs.area;
   }
   const basisLine = (activeTab === 'weak')
     ? '计算依据：GB 51348-2019（管径40% / 截面30% / 截面50%）'
@@ -744,7 +775,7 @@ function exportExcel(){
   html += '<tr><td colspan="6">' + esc(basisLine) + '</td></tr>';
   html += '<tr><th>类别</th><th>线缆型号</th><th>外径(mm)</th><th>截面积(mm²)</th><th>根数</th><th>建议管径</th></tr>';
   t.rows.forEach(r => {
-    const pr = pipeFor(r.od, cableArea(r), r.qty, pipes, mode);
+    const pr = pipeFor(r.od, cableArea(r), r.qty, pipes, mode, r.dx);
     const odDisp = r.odText ? r.odText : (r.od || '');
     const areaDisp = (r.od || r.area != null) ? fmt(cableArea(r)) : '';
     html += '<tr><td>' + esc(r.cat) + '</td><td>' + esc(r.name) + '</td><td>' + esc(odDisp) + '</td><td>' + areaDisp + '</td><td>' + (r.qty || 0) + '</td><td>' + esc(pr.label) + '</td></tr>';
@@ -754,7 +785,7 @@ function exportExcel(){
   html += '<tr><td colspan="6" style="font-weight:bold">汇总结果</td></tr>';
   html += '<tr><td colspan="3">线缆总根数</td><td colspan="3">' + totalQty + '</td></tr>';
   html += '<tr><td colspan="3">线缆总截面积 (mm²)</td><td colspan="3">' + fmt(totalArea) + '</td></tr>';
-  html += '<tr><td colspan="3">建议管径（汇总）</td><td colspan="3">' + esc(pipeLabel) + '</td></tr>';
+  html += '<tr><td colspan="3">建议管径</td><td colspan="3">' + esc(pipeLabel) + '</td></tr>';
   html += '<tr><td colspan="3">线管截面积 (mm²)</td><td colspan="3">' + (pipeArea != null ? fmt(pipeArea) : '-') + '</td></tr>';
   html += '<tr><td colspan="3">建议桥架规格</td><td colspan="3">' + esc(bridgeSpec) + '</td></tr>';
   html += '<tr><td colspan="3">桥架截面积 (mm²)</td><td colspan="3">' + (bridgeArea != null ? fmt(bridgeArea) : '-') + '</td></tr>';
