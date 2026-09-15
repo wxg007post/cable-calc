@@ -766,8 +766,8 @@ function exportExcel(){
     bridgeSpec = bs.spec; bridgeArea = bs.area;
   }
   const basisLine = (activeTab === 'weak')
-    ? '计算依据：GB 51348-2019（管径40% / 截面30% / 截面50%）'
-    : '计算依据：GB 51348-2019（管径40% / 桥架40%）';
+    ? '计算依据：GB 51348-2019'
+    : '计算依据：GB 51348-2019';
   const titleLine = (activeTab === 'weak') ? '弱电线缆 · 线缆穿管 / 桥架规格计算器' : '强电线缆 · 线缆穿管 / 桥架规格计算器';
   let html = '<table border="1" cellspacing="0">';
   html += '<tr><td colspan="6" style="font-weight:bold;font-size:14px">' + esc(titleLine) + '</td></tr>';
