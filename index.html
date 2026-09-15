@@ -726,7 +726,7 @@ function renderPager(){
   pager.appendChild(mk('› 下一页', t.currentPage + 1, {disabled: t.currentPage === total}));
   pager.appendChild(mk('» 末页', total, {disabled: t.currentPage === total}));
   const info = document.createElement('span'); info.className = 'pg-info';
-  info.textContent = '每页 ' + t.pageSize + ' 行 · 第 ' + t.currentPage + ' / ' + total + ' 页 · 共 ' + t.rows.length + ' 条线缆';
+  info.textContent = '每页 ' + t.pageSize + ' 行 · 第 ' + t.currentPage + ' / ' + total + ' 页 · 共 ' + t.rows.length + ' 种线缆';
   pager.appendChild(info);
 }
 
